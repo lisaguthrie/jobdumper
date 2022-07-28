@@ -1,3 +1,4 @@
 obj/
 bin/
 *.csv
+__azurite*
