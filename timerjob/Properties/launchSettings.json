@@ -2,7 +2,7 @@
   "profiles": {
     "timerjob": {
       "commandName": "Project",
-      "commandLineArgs": "--port 7216",
+      "commandLineArgs": "--port 7152",
       "launchBrowser": false
     }
   }

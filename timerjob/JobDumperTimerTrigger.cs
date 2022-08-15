@@ -1,19 +1,20 @@
 using System;
-using Microsoft.Azure.Functions.Worker;
+using Microsoft.Azure.WebJobs;
+using Microsoft.Azure.WebJobs.Host;
 using Microsoft.Extensions.Logging;
+using System.IO;
 using System.Text.Json.Nodes;
 using System.Web;
 using System.Net.Http;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
-using System.IO;
 
 namespace JobDumper.TimerTrigger
 {
     public class JobDumperTimerTrigger
     {
-        private readonly ILogger _logger;
+        private ILogger _logger;
 
         // Environment variable names
         private string ENVVAR_RETRIES = "JOBDUMPER_RETRIES";
@@ -23,16 +24,14 @@ namespace JobDumper.TimerTrigger
         private readonly int RETRIES = 2;
         private readonly string[] SEARCHKEYWORDS = { "ddjl", "%23DevDiv", "DevDiv", "\"Developer%20Division\"" };
 
-        public JobDumperTimerTrigger(ILoggerFactory loggerFactory)
+        [FunctionName("JobDumperTimerTrigger")]
+        public async Task Run([TimerTrigger("%JOBDUMPER_CRONEXPRESSION%")]TimerInfo myTimer,  
+        [Blob("jobdumper/currentjobs.json", FileAccess.Write)] TextWriter resultsBlob, ILogger log)
         {
-            _logger = loggerFactory.CreateLogger<JobDumperTimerTrigger>();
-        }
+            _logger = log;
 
-        [Function("JobDumperTimerTrigger")]
-        [BlobOutput("jobdumper/currentjobs.json")]
-        public async Task<string> Run([TimerTrigger("0 0 * * * *")] MyInfo myTimer)
-        {
-            _logger.LogInformation($"C# Timer trigger function executed at: {DateTime.Now}");
+            _logger.LogInformation($"JobDumperTimerTrigger function executed at: {DateTime.Now}");
+            _logger.LogInformation("Cron expression is '{0}'", Environment.GetEnvironmentVariable("JOBDUMPER_CRONEXPRESSION"));
 
             HttpClient client = new HttpClient();
 
@@ -60,7 +59,7 @@ namespace JobDumper.TimerTrigger
             }
             else 
             {
-                _logger.LogInformation($"Could not load list of search keywords from '{ENVVAR_KEYWORDS}' environment variable. Using default: {0}", String.Join(',', SEARCHKEYWORDS));
+                _logger.LogInformation("Could not load list of search keywords from '{0}' environment variable. Using default: {1}", ENVVAR_KEYWORDS, String.Join(',', SEARCHKEYWORDS));
             }
 
             // A dictionary holding all the job listings we've found so far. This allows us to dedupe
@@ -125,7 +124,7 @@ namespace JobDumper.TimerTrigger
                             jobs.Add(jobId, jobNode.ToString());
                         }
                         else {
-                            _logger.LogInformation("Skipping job ID {0} ({1})", jobId, jobNode["title"]);
+                            _logger.LogInformation("  Skipping job ID {0} ({1}) - already added from a previous search keyword", jobId, jobNode["title"]);
                         }
                     }
                 }
@@ -137,36 +136,20 @@ namespace JobDumper.TimerTrigger
 
             // Now the jobs array holds all the deduped jobs that we found. Dump them into a big JSON node for
             // saving off to an appropriate location.
-            string results = "{ \"jobs\": [";
+            string results = $"{{ \"lastUpdated\": \"{DateTime.UtcNow}\", \"jobs\": [";
 
             int counter = 1;
             foreach (string jobListing in jobs.Values)
             {
                 results += jobListing;
-                if (counter < jobs.Values.Count) results += ","; // don't add a comma to the last entry
+                if (counter < jobs.Values.Count) results += ","; // don't add a comma after the last entry
                 results += Environment.NewLine;
                 counter++;
             }
 
             results += "]}";
 
-            return results;
+            await resultsBlob.WriteLineAsync(results);
         }
-    }
-
-    public class MyInfo
-    {
-        public MyScheduleStatus ScheduleStatus { get; set; }
-
-        public bool IsPastDue { get; set; }
-    }
-
-    public class MyScheduleStatus
-    {
-        public DateTime Last { get; set; }
-
-        public DateTime Next { get; set; }
-
-        public DateTime LastUpdated { get; set; }
     }
 }
