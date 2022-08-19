@@ -2,3 +2,4 @@ obj/
 bin/
 *.csv
 __azurite*
+local.settings.json
