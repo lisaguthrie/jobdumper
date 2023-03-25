@@ -49,6 +49,7 @@ namespace JobDumper.LandingPage
 
                     // Parsing the career stage. Also based on the listing title.
                     string careerStage = "Entry Level";
+                    if (title.Contains("Lead")) careerStage = "Senior"; // assume leads are Senior, unless they match the Principal criteria
                     if (title.StartsWith ("Senior", StringComparison.CurrentCultureIgnoreCase) || title.StartsWith ("Sr", StringComparison.CurrentCultureIgnoreCase)) careerStage = "Senior";
                     if (title.StartsWith ("Principal", StringComparison.CurrentCultureIgnoreCase)) careerStage = "Principal";
 
