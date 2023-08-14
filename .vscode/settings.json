@@ -1,0 +1,4 @@
+{
+    "azureFunctions.projectSubpath": "landingpage",
+    "dotnet.defaultSolution": "timerjob/timerjob.sln"
+}
