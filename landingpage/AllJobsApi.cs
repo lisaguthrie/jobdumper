@@ -62,7 +62,7 @@ namespace JobDumper.LandingPage
                         if (title.StartsWith ("Principal", StringComparison.CurrentCultureIgnoreCase)) careerStage = "Principal";
 
                         // Write the desired data in CSV format.
-                        outputString.AppendLine($"{i},{jobNode["postedDate"].ToString()},{title.Replace(',', '-')},{location},{discipline},{careerStage},https://careers.microsoft.com/us/en/job/{jobNode["jobId"].ToString()}");
+                        outputString.AppendLine($"{i},{jobNode["postedDate"].ToString()},{title.Replace(',', '-')},{location},{discipline},{careerStage},{jobNode["url"].ToString()}");
                     }
                     catch (Exception ex)
                     {
