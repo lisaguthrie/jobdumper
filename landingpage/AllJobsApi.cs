@@ -59,7 +59,7 @@ namespace JobDumper.LandingPage
                         string careerStage = "Entry Level";
                         if (title.Contains("Lead", StringComparison.CurrentCultureIgnoreCase)) careerStage = "Senior"; // assume leads are Senior, unless they match the Principal criteria
                         if (title.StartsWith ("Senior", StringComparison.CurrentCultureIgnoreCase) || title.StartsWith ("Sr", StringComparison.CurrentCultureIgnoreCase)) careerStage = "Senior";
-                        if (title.StartsWith ("Principal", StringComparison.CurrentCultureIgnoreCase)) careerStage = "Principal";
+                        if (title.StartsWith ("Principal", StringComparison.CurrentCultureIgnoreCase) || title.StartsWith ("Chief of Staff", StringComparison.CurrentCultureIgnoreCase)) careerStage = "Principal";
 
                         // Write the desired data in CSV format.
                         outputString.AppendLine($"{i},{jobNode["postedDate"].ToString()},{title.Replace(',', '-')},{location},{discipline},{careerStage},{jobNode["url"].ToString()}");
