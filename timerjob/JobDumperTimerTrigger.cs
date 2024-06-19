@@ -9,6 +9,8 @@ using System.Net.Http;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
+using Azure.Identity;
+using Azure.Storage.Blobs;
 
 namespace JobDumper.TimerTrigger
 {
@@ -24,14 +26,27 @@ namespace JobDumper.TimerTrigger
         private readonly int RETRIES = 2;
         private readonly string[] SEARCHKEYWORDS = { "%23ddjl", "%23DevDiv", "DevDiv", "\"Developer%20Division\"" };
 
+        private BlobServiceClient _blobServiceClient;
+
+        public JobDumperTimerTrigger()
+        {
+            _blobServiceClient = new BlobServiceClient(new Uri("https://jobdumper.blob.core.windows.net/"), new DefaultAzureCredential());
+        }
+
         [FunctionName("JobDumperTimerTrigger")]
-        public async Task Run([TimerTrigger("%JOBDUMPER_CRONEXPRESSION%")] TimerInfo myTimer,
-        [Blob("jobdumper/currentjobs.json", FileAccess.Write)] TextWriter resultsBlob, ILogger log)
+        public async Task Run([TimerTrigger("%JOBDUMPER_CRONEXPRESSION%")] TimerInfo myTimer, ILogger log)
+        //public async Task Run([TimerTrigger("0 * * * * *")] TimerInfo myTimer, ILogger log)
         {
             _logger = log;
 
             _logger.LogInformation($"JobDumperTimerTrigger function executed at: {DateTime.Now}");
             _logger.LogInformation("Cron expression is '{0}'", Environment.GetEnvironmentVariable("JOBDUMPER_CRONEXPRESSION"));
+
+            var containerClient = _blobServiceClient.GetBlobContainerClient("jobdumper");
+            var blobClient = containerClient.GetBlobClient("currentjobs.json");
+
+            using var memoryStream = new MemoryStream();
+            using var resultsBlob = new StreamWriter(memoryStream);
 
             HttpClient client = new();
 
@@ -166,6 +181,9 @@ namespace JobDumper.TimerTrigger
             results += "]}";
 
             await resultsBlob.WriteLineAsync(results);
+            await resultsBlob.FlushAsync();
+            memoryStream.Position = 0;
+            await blobClient.UploadAsync(memoryStream, true);
         }
 
 
