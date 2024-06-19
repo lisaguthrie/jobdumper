@@ -22,13 +22,6 @@ jobs:
     steps:
       - name: 'Checkout GitHub Action'
         uses: actions/checkout@v4
-
-      - name: 'Clean bin and obj directories'
-        shell: pwsh
-        run: |
-          echo "Deleting bin and obj directories..."
-          Remove-Item -Path "output\bin" -Recurse -Force
-          Remove-Item -Path "output\obj" -Recurse -Force
           
       - name: Setup DotNet ${{ env.DOTNET_VERSION }} Environment
         uses: actions/setup-dotnet@v1
@@ -40,7 +33,7 @@ jobs:
         run: |
           pushd './${{ env.AZURE_FUNCTIONAPP_PACKAGE_PATH }}'
           dotnet clean --configuration Release
-          dotnet build --configuration Release --output ./output
+          dotnet build --maxcpucount:1 --configuration Release --output ./output
           popd
       
       - name: Login to Azure
