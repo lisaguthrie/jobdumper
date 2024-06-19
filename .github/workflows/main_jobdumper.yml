@@ -23,6 +23,14 @@ jobs:
       - name: 'Checkout GitHub Action'
         uses: actions/checkout@v4
 
+      - name: 'Clean bin and obj directories'
+        run: |
+          echo "Deleting bin and obj directories..."
+          rmdir /s /q "jobdumper\output\bin"
+          rmdir /s /q "jobdumper\output\obj"
+          rmdir /s /q "landingpage\output\bin"
+          rmdir /s /q "landingpage\output\obj"
+          
       - name: Setup DotNet ${{ env.DOTNET_VERSION }} Environment
         uses: actions/setup-dotnet@v1
         with:
