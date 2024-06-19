@@ -24,12 +24,13 @@ jobs:
         uses: actions/checkout@v4
 
       - name: 'Clean bin and obj directories'
+        shell: pwsh
         run: |
           echo "Deleting bin and obj directories..."
-          rmdir /s "jobdumper\output\bin"
-          rmdir /s "jobdumper\output\obj"
-          rmdir /s "landingpage\output\bin"
-          rmdir /s "landingpage\output\obj"
+          Remove-Item -Path "jobdumper\output\bin" -Recurse -Force
+          Remove-Item -Path "jobdumper\output\obj" -Recurse -Force
+          Remove-Item -Path "landingpage\output\bin" -Recurse -Force
+          Remove-Item -Path "landingpage\output\obj" -Recurse -Force
           
       - name: Setup DotNet ${{ env.DOTNET_VERSION }} Environment
         uses: actions/setup-dotnet@v1
