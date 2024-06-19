@@ -27,10 +27,8 @@ jobs:
         shell: pwsh
         run: |
           echo "Deleting bin and obj directories..."
-          Remove-Item -Path "jobdumper\output\bin" -Recurse -Force
-          Remove-Item -Path "jobdumper\output\obj" -Recurse -Force
-          Remove-Item -Path "landingpage\output\bin" -Recurse -Force
-          Remove-Item -Path "landingpage\output\obj" -Recurse -Force
+          Remove-Item -Path "output\bin" -Recurse -Force
+          Remove-Item -Path "output\obj" -Recurse -Force
           
       - name: Setup DotNet ${{ env.DOTNET_VERSION }} Environment
         uses: actions/setup-dotnet@v1
